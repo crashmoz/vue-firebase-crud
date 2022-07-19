@@ -7,15 +7,26 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Phone</th>
-                        <th>Actions</th>
+                        <th>Avatar</th>
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="user in users" :key="user.key">
-                        <td>{{ user.name }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.phone }}</td>
+                        <td class="py-4">
+                            {{ user.name }}
+                        </td>
+                        <td class="py-4">{{ user.email }}</td>
+                        <td class="py-4">{{ user.phone }}</td>
                         <td>
+                            <img
+                                :src="getAva(user)"
+                                sizes="200"
+                                width="70"
+                                height="70"
+                            />
+                        </td>
+                        <td class="py-4">
                             <router-link
                                 :to="{ name: 'edit', params: { id: user.key } }"
                                 class="btn btn-primary mx-2"
@@ -37,11 +48,12 @@
 </template>
 
 <script>
-import { collection, getDocs, onSnapshot, deleteDoc } from "firebase/firestore";
+import { collection, doc, onSnapshot, deleteDoc } from "firebase/firestore";
 import { db } from "../firebaseDB";
 export default {
     data: () => ({
         users: [],
+        urlAva: "https://icotar.com/initials/",
     }),
     created() {
         onSnapshot(collection(db, "users"), (snapshot) => {
@@ -53,6 +65,7 @@ export default {
                         name: doc.data().name,
                         email: doc.data().email,
                         phone: doc.data().phone,
+                        avatar: doc.data().avatar,
                     });
                 },
                 (error) => {
@@ -62,6 +75,12 @@ export default {
         });
     },
     methods: {
+        getAva(data) {
+            if (data.avatar) {
+                return data.avatar;
+            }
+            return this.urlAva + data.name;
+        },
         deleteUser(id) {
             if (window.confirm("Do you really want to delete ?")) {
                 deleteDoc(doc(db, "users", id))
